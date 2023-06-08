@@ -36,7 +36,7 @@ class GPS:
     def get_jacobian(self):
 
         J_o = np.array([[1, 0, 0, 0],
-                           [0, 1, 0, 0]])
+                        [0, 1, 0, 0]])
         
         return J_o
     

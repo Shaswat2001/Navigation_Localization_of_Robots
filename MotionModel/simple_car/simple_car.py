@@ -20,8 +20,8 @@ class SimpleCarModel:
         assert len(X.shape) == 2, "State vector is not a 2D matrix"
         assert X.shape[0] == self.dim_state, "State vector is not of same size as that of dimensions of SIMPLE CAR MODEL"
 
-        B = np.array([[self.DT*math.cos(X[2]), 0],
-                      [self.DT*math.sin(X[2]), 0],
+        B = np.array([[self.DT*math.cos(X[2][0]), 0],
+                      [self.DT*math.sin(X[2][0]), 0],
                       [0, self.DT]])
         
         X_new = self.A@X + B@self.u
@@ -32,8 +32,8 @@ class SimpleCarModel:
     
     def get_jacobian(self,X):
 
-        J_m = np.array([[1, 0, -self.DT*self.u[0]*math.sin(X[2])],
-                        [0, 1,  self.DT*self.u[0]*math.cos(X[2])],
+        J_m = np.array([[1, 0, -self.DT*self.u[0][0]*math.sin(X[2])],
+                        [0, 1,  self.DT*self.u[0][0]*math.cos(X[2])],
                         [0, 0, 1]])
         
         return J_m

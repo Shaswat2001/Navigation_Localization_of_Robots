@@ -35,7 +35,13 @@ class EKF:
 
         while self.current_time<self.SIM_TIME:
 
-            pass
+            Xp,Pp = self.prediction_step()
+            X_post,P_post = self.updatation_step(Xp,Pp)
+
+            self.X = X_post
+            self.P = P_post
+
+            self.current_time+=self.g.DT
 
     def prediction_step(self):
         
@@ -46,8 +52,6 @@ class EKF:
         X_prior,G = self.g.solve(X)
         P_prior = G.dot(P).dot(G.T) + R
 
-        Z,h_x,H = self.h.solve(X_prior)
-
         return X_prior,P_prior
     
     def updatation_step(self,Xp,Pp):
@@ -57,7 +61,7 @@ class EKF:
 
         K = self.calculate_kalman_gain(Pp,H,Q)
 
-        X_post = X + K.dot(Z - h_x)
+        X_post = Xp + K.dot(Z - h_x)
         F = np.eye(K.shape[0],H.shape[1]) - K@H
         P_post = F.dot(Pp)
 
