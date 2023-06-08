@@ -14,7 +14,7 @@ class SimpleCarModel:
 
         self.A = np.eye(self.dim_state)
 
-    def motion_model(self,X):
+    def solve(self,X):
 
         assert type(X) == np.ndarray, "State vector is not a matrix"
         assert len(X.shape) == 2, "State vector is not a 2D matrix"
@@ -26,7 +26,17 @@ class SimpleCarModel:
         
         X_new = self.A@X + B@self.u
 
-        return X_new
+        J_m = self.get_jacobian(X)
+
+        return X_new,J_m
+    
+    def get_jacobian(self,X):
+
+        J_m = np.array([[1, 0, -self.DT*self.u[0]*math.sin(X[2])],
+                        [0, 1,  self.DT*self.u[0]*math.cos(X[2])],
+                        [0, 0, 1]])
+        
+        return J_m
     
     def set_controls(self,U):
 
