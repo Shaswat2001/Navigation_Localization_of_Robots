@@ -1,6 +1,6 @@
 import sys
 import pathlib
-sys.path.append(str(pathlib.Path(__file__).parent.parent))
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent))
 
 import numpy as np
 import unittest
@@ -18,14 +18,23 @@ class EKFTest(unittest.TestCase):
 
     def test_prediction_step(self):
 
-        J_m = self.model.get_jacobian(np.array([[0,0,0]]).T)
-        self.assertIsNone(np.testing.assert_allclose(J_m, np.array([[1, 0, 0],
-                                                                    [0, 1, 0.1],
-                                                                    [0, 0, 1]])), "Incorrect jacobian")
+        _,P_prior = self.filter.prediction_step()
+        
+        self.assertIsNone(np.testing.assert_allclose(P_prior, np.array([[1.01, 0, 0],
+                                                                    [0, 1.02, 0.1],
+                                                                    [0, 0.1, 1.0003046]])), "Incorrect prediction covariance")
 
-    def test_motion_model(self):
+    def test_kalman_filter(self):
 
-        x_new,_ = self.model.solve(np.array([[0,0,0]]).T)
-        self.assertIsNone(np.testing.assert_allclose(x_new, np.array([[0.1,0,0.01]]).T), "Incorrect new state vector")
+        Pp = np.eye(3)
+        H = np.array([[1, 0, 0],
+                      [0, 1, 0]])
+        Q = np.eye(2)
+
+        kalman = self.filter.calculate_kalman_gain(Pp,H,Q)
+
+        self.assertIsNone(np.testing.assert_allclose(kalman, np.array([[2, 0],
+                                                                       [0, 2],
+                                                                       [0, 0]])), "Incorrect Kalman gain")
 
 unittest.main()

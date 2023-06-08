@@ -6,6 +6,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 import numpy as np
 from MotionModel.simple_car.simple_car import SimpleCarModel
 from ObservationModel.GPS.GPS import GPS
+import matplotlib.pyplot as plt
 
 class EKF:
 
@@ -15,6 +16,8 @@ class EKF:
         self.h = obsModel
         self.SIM_TIME = 50
         self.current_time = 0
+
+        self.X_list = []
         
         self.set_initial_conditions()
 
@@ -40,6 +43,8 @@ class EKF:
 
             self.X = X_post
             self.P = P_post
+
+            self.X_list.append(X_post)
 
             self.current_time+=self.g.DT
 
@@ -78,5 +83,22 @@ class EKF:
 
         self.set_initial_conditions(X)
 
+
+if __name__ == "__main__":
+
+    motion_model = SimpleCarModel()
+    obs_model = GPS()
+    filter = EKF(motion_model,obs_model)
+    filter.run()
+
+    X_val = []
+    Y_val = []
+    for arr in filter.X_list:
+
+        X_val.append(arr[0][0])
+        Y_val.append(arr[1][0])
+
+    plt.plot(X_val,Y_val)
+    plt.show()
 
 

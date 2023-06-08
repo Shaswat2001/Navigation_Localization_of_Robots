@@ -10,8 +10,8 @@ class GPS:
         self.noise = np.diag([0.5, 0.5])**2
 
         self.Q = np.diag([1.0,1.0])**2
-        self.C = np.array([[1, 0, 0, 0],
-                           [0, 1, 0, 0]])
+        self.C = np.array([[1, 0, 0],
+                           [0, 1, 0]])
     
     def solve(self,X):
 
@@ -35,8 +35,8 @@ class GPS:
     
     def get_jacobian(self):
 
-        J_o = np.array([[1, 0, 0, 0],
-                        [0, 1, 0, 0]])
+        J_o = np.array([[1, 0, 0],
+                        [0, 1, 0]])
         
         return J_o
     
