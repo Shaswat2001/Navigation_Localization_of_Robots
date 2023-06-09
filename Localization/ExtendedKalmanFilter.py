@@ -2,12 +2,10 @@ import sys
 import pathlib
 sys.path.append(str(pathlib.Path(__file__).parent.parent))
 
-
 import numpy as np
-from MotionModel.simple_car import SimpleCarModel
+from MotionModel.SimpleCar import SimpleCarModel
 from ObservationModel.GPS import GPS
 from utils.utils import *
-import matplotlib.pyplot as plt
 
 class EKF:
 
@@ -81,7 +79,7 @@ class EKF:
 
         residual = Z - h_x
         X_post = Xp + K @ residual
-        F = np.eye(K.shape[0],H.shape[1]) - K @ H
+        F = np.eye(len(X_post)) - K @ H
         P_post = F @ Pp
 
         return X_post,P_post,Z

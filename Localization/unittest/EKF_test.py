@@ -5,7 +5,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent.parent))
 import numpy as np
 import unittest
 from Localization.ExtendedKalmanFilter import EKF
-from MotionModel.simple_car import SimpleCarModel
+from MotionModel.SimpleCar import SimpleCarModel
 from ObservationModel.GPS import GPS
 
 class EKFTest(unittest.TestCase):
