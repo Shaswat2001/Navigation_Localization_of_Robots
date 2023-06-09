@@ -19,17 +19,17 @@ class GPS:
         assert len(X.shape) == 2, "State vector is not a 2D matrix"
         assert X.shape[0] == self.C.shape[1], "State vector is not of same size as that of dimensions of OBSERVATION MODEL"
 
-        Z_pred = self.C@X
+        Z_pred = self.C @ X
 
         J_z = self.get_jacobian()
 
         measurement = self.get_measurement(Z_pred)
 
-        return Z_pred,measurement,J_z
+        return measurement,Z_pred,J_z
     
     def get_measurement(self,Z):
 
-        Z = Z + self.noise@np.random.randn(self.dim_z,1)
+        Z = Z + self.noise @ np.random.randn(self.dim_z,1)
 
         return Z
     

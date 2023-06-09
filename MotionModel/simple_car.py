@@ -24,7 +24,7 @@ class SimpleCarModel:
                       [self.DT*math.sin(X[2][0]), 0],
                       [0, self.DT]])
         
-        X_new = self.A@X + B@self.u
+        X_new = self.A @ X + B @ self.u
 
         J_m = self.get_jacobian(X)
 

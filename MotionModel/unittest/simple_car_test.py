@@ -4,7 +4,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 
 import unittest
 import numpy as np
-from simple_car.simple_car import SimpleCarModel
+from simple_car import SimpleCarModel
 
 class SimpleCarModelTest(unittest.TestCase):
 

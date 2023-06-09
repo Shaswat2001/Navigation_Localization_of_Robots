@@ -4,8 +4,8 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 
 
 import numpy as np
-from MotionModel.simple_car.simple_car import SimpleCarModel
-from ObservationModel.GPS.GPS import GPS
+from MotionModel.simple_car import SimpleCarModel
+from ObservationModel.GPS import GPS
 from utils.utils import *
 import matplotlib.pyplot as plt
 
@@ -17,10 +17,6 @@ class EKF:
         self.h = obsModel
         self.SIM_TIME = 50
         self.current_time = 0
-
-        self.Xtrue_list = []
-        self.Xest_list = []
-        self.obs_list = []
         
         self.set_initial_conditions()
 
@@ -32,43 +28,49 @@ class EKF:
             assert X.shape[0] == self.g.dim_state, "State vector is not of same size as that of dimensions of SIMPLE CAR MODEL"
 
             self.X = X
+            self.Xt = X
             self.P = P
         else:
             self.X = np.zeros((self.g.dim_state,1))
-            self.Xtrue = np.zeros((self.g.dim_state,1))
+            self.Xt = np.zeros((self.g.dim_state,1))
             self.P = np.eye(self.g.dim_state)
+
+        self.results = {"true_path":self.Xt,
+                        "est_path":self.X,
+                        "observation":np.zeros((self.h.dim_z, 1))
+                        }
 
     def run(self):
 
         while self.current_time<self.SIM_TIME:
-            
 
-            Xt,Xp,Pp = self.prediction_step()
-            X_post,P_post,Z = self.updatation_step(Xp,Pp)
+            X_true,X_prior,P_prior = self.prediction_step()
+            X_post,P_post,Z = self.updatation_step(X_prior,P_prior)
 
             self.X = X_post
-            self.Xtrue = Xt
+            self.Xt = X_true
             self.P = P_post
 
-            self.Xest_list.append(X_post)
-            self.Xtrue_list.append(Xt)
+            self.results["true_path"] = np.hstack((self.results["true_path"],X_true))
+            self.results["est_path"] = np.hstack((self.results["est_path"],X_post))
+            self.results["observation"] = np.hstack((self.results["observation"],Z))
 
-            plot_paths(self.Xtrue_list,self.Xest_list,self.obs_list,X_post,P_post)
+            plot_paths(self.results,X_post,P_post)
 
             self.current_time+=self.g.DT
 
     def prediction_step(self):
         
         X = self.X
-        Xtrue = self.Xtrue
+        X_true = self.Xt
         P = self.P
         R = self.g.R
 
-        Xtrue,_ = self.g.solve(Xtrue)
+        X_true,_ = self.g.solve(X_true)
         X_prior,G = self.g.solve(X)
-        P_prior = G.dot(P).dot(G.T) + R
+        P_prior = G @ P @ G.T + R
 
-        return Xtrue,X_prior,P_prior
+        return X_true,X_prior,P_prior
     
     def updatation_step(self,Xp,Pp):
 
@@ -77,18 +79,17 @@ class EKF:
 
         K = self.calculate_kalman_gain(Pp,H,Q)
 
-        X_post = Xp + K.dot(Z - h_x)
-        F = np.eye(K.shape[0],H.shape[1]) - K.dot(H)
-        P_post = F.dot(Pp)
-
-        self.obs_list.append(Z)
+        residual = Z - h_x
+        X_post = Xp + K @ residual
+        F = np.eye(K.shape[0],H.shape[1]) - K @ H
+        P_post = F @ Pp
 
         return X_post,P_post,Z
     
     def calculate_kalman_gain(self,Pest,H,Q):
         
-        y = np.linalg.inv(H.dot(Pest).dot(H.T) + Q)
-        K = Pest.dot(H.T).dot(y)
+        k_inv = np.linalg.inv(H @ Pest @ H.T + Q)
+        K = Pest @ H.T @ k_inv
 
         return K
 
@@ -102,6 +103,4 @@ if __name__ == "__main__":
     obs_model = GPS()
     filter = EKF(motion_model,obs_model)
     filter.run()
-    # plot_paths(filter.Xtrue_list,filter.Xest_list,filter.obs_list)
-
 

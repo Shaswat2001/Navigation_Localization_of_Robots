@@ -12,29 +12,12 @@ def theta2RMatrix(angle):
     
     return Rmat[0:2, 0:2]
 
-def plot_paths(true_path,est_path,obs_list,xEst,PEst):
+def plot_paths(results,xEst,PEst):
 
-    true_x = []
-    true_y = []
-    est_x = []
-    est_y = []
-    obs_x = []
-    obs_y = []
     plt.cla()
-    for i in range(len(true_path)):
-
-        true_x.append(true_path[i][0][0])
-        true_y.append(true_path[i][1][0])
-
-        est_x.append(est_path[i][0][0])
-        est_y.append(est_path[i][1][0])
-
-        obs_x.append(obs_list[i][0][0])
-        obs_y.append(obs_list[i][1][0])
-
-    plt.plot(true_x,true_y,"-k")
-    plt.plot(est_x,est_y,"-b")
-    plt.plot(obs_x,obs_y,".g")
+    plt.plot(results["true_path"][0, :].flatten(),results["true_path"][1, :].flatten(),"-k")
+    plt.plot(results["est_path"][0, :].flatten(),results["est_path"][1, :].flatten(),"-b")
+    plt.plot(results["observation"][0, :],results["observation"][1, :],".g")
     plot_covariance_ellipse(xEst, PEst)
         
     plt.title("EKF with GPS and Simple car model")
