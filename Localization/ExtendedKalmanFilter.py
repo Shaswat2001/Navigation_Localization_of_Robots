@@ -39,22 +39,28 @@ class EKF:
                         "observation":np.zeros((self.h.dim_z, 1))
                         }
 
-    def run(self):
+    def run(self,landmarks):
 
         while self.current_time<self.SIM_TIME:
 
             X_true,X_prior,P_prior = self.prediction_step()
-            X_post,P_post,Z = self.updatation_step(X_prior,P_prior)
+            
+            X_lnd = X_prior
+            P_lnd = P_prior
 
-            self.X = X_post
+            for lndm in landmarks:
+                lndm = lndm.reshape(lndm.shape[0],1)
+                X_lnd,P_lnd,Z = self.updatation_step(lndm,X_lnd,P_lnd)
+
+            self.X = X_lnd
             self.Xt = X_true
-            self.P = P_post
+            self.P = P_lnd
 
             self.results["true_path"] = np.hstack((self.results["true_path"],X_true))
-            self.results["est_path"] = np.hstack((self.results["est_path"],X_post))
+            self.results["est_path"] = np.hstack((self.results["est_path"],X_lnd))
             self.results["observation"] = np.hstack((self.results["observation"],Z))
 
-            plot_paths(self.results,X_post,P_post)
+            plot_paths(self.results,X_lnd,P_lnd,landmarks)
 
             self.current_time+=self.g.DT
 
@@ -70,10 +76,10 @@ class EKF:
 
         return X_true,X_prior,P_prior
     
-    def updatation_step(self,Xp,Pp):
+    def updatation_step(self,landmark,Xp,Pp):
 
         Q = self.h.Q
-        Z,h_x,H = self.h.solve(Xp)
+        Z,h_x,H = self.h.solve(landmark,Xp)
 
         K = self.calculate_kalman_gain(Pp,H,Q)
 
@@ -98,11 +104,11 @@ class EKF:
 if __name__ == "__main__":
 
     motion_model = SimpleCarModel()
-    obs_model = GPS()
+    # obs_model = GPS()
     
     obs_model = RangeBearing()
 
     landmarks = np.array([[5, 10], [10, 5], [15, 15]])
     filter = EKF(motion_model,obs_model)
-    filter.run()
+    filter.run(landmarks)
 

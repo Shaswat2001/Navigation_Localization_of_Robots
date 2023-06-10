@@ -7,20 +7,20 @@ class RangeBearing:
 
         self.dim_z = 2
 
-        self.noise = np.diag([0.5, 0.5])**2
+        self.noise = np.diag([0.3, 0.1])
 
-        self.Q = np.diag([1.0,1.0])**2
+        self.Q = np.diag([0.3,0.1])**2
     
     def solve(self,landmark,X):
 
-        range = math.sqrt((landmark[0] - X[0])**2 + (landmark[1] - X[1])**2)
-        bearing = math.atan2(landmark[1] - X[1],landmark[0] - X[0]) - X[2]
+        range = math.sqrt((landmark[0][0] - X[0][0])**2 + (landmark[1][0] - X[1][0])**2)
+        bearing = math.atan2(landmark[1][0] - X[1][0],landmark[0][0] - X[0][0]) - X[2][0]
 
         Z_pred = np.array([[range,bearing]]).T
 
         J_z = self.get_jacobian(landmark,X)
 
-        measurement = self.get_measurement(landmark)
+        measurement = self.get_measurement(Z_pred)
 
         return measurement,Z_pred,J_z
     
@@ -32,9 +32,9 @@ class RangeBearing:
     
     def get_jacobian(self,lnd,x):
 
-        dist = (lnd[0] - x[0])**2 + (lnd[1] - x[1])**2
-        J_o = np.array([[-(lnd[0] - x[0])/math.sqrt(dist), -(lnd[1] - x[1])/math.sqrt(dist), 0],
-                        [(lnd[1] - x[1])/dist, -(lnd[0] - x[0])/dist, -1]])
+        dist = (lnd[0][0] - x[0][0])**2 + (lnd[1][0] - x[1][0])**2
+        J_o = np.array([[-(lnd[0][0] - x[0][0])/math.sqrt(dist), -(lnd[1][0] - x[1][0])/math.sqrt(dist), 0],
+                        [(lnd[1][0] - x[1][0])/dist, -(lnd[0][0] - x[0][0])/dist, -1]])
         
         return J_o
     

@@ -21,12 +21,14 @@ def residual(a, b):
         y[1] -= 2 * np.pi
     return y
 
-def plot_paths(results,xEst,PEst):
+def plot_paths(results,xEst,PEst,landmarks):
 
     plt.cla()
     plt.plot(results["true_path"][0, :].flatten(),results["true_path"][1, :].flatten(),"-k")
     plt.plot(results["est_path"][0, :].flatten(),results["est_path"][1, :].flatten(),"-b")
-    plt.plot(results["observation"][0, :],results["observation"][1, :],".g")
+    # plt.plot(results["observation"][0, :],results["observation"][1, :],".g")
+
+    plt.scatter(landmarks[:,0],landmarks[:,1],marker='s', s=60)
     plot_covariance_ellipse(xEst, PEst)
         
     plt.title("EKF with GPS and Simple car model")

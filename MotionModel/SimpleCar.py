@@ -11,7 +11,7 @@ class SimpleCarModel:
 
         self.noise = np.diag([1.0, np.deg2rad(3.0)])**2 # control error given to velocity commands
         self.M = np.diag([0.1, np.deg2rad(1.0)])**2 # state variance in [x, y, theta]
-        self.u = np.array([[1,0.1]]).T # control input [v, omega]
+        self.u = np.array([[1.1,0.01]]).T # control input [v, omega]
 
         self.A = np.eye(self.dim_state)
 
@@ -23,8 +23,8 @@ class SimpleCarModel:
 
         omg = self.u[1][0]
 
-        B = np.array([[-math.sin(X[2])/omg + math.sin(X[2] + self.DT*omg)/omg, 0],
-                      [ math.cos(X[2])/omg - math.cos(X[2] + self.DT*omg)/omg, 0],
+        B = np.array([[-math.sin(X[2][0])/omg + math.sin(X[2][0] + self.DT*omg)/omg, 0],
+                      [ math.cos(X[2][0])/omg - math.cos(X[2][0] + self.DT*omg)/omg, 0],
                       [0, self.DT]])
         
         if method == "prob":
@@ -47,8 +47,8 @@ class SimpleCarModel:
         v = u[0][0]
         omg = u[1][0]
         R = v/omg
-        J_m = np.array([[1, 0, -R*math.cos(X[2]) + R*math.cos(X[2] + self.DT*omg)],
-                        [0, 1, -R*math.sin(X[2]) + R*math.sin(X[2] + self.DT*omg)],
+        J_m = np.array([[1, 0, -R*math.cos(X[2][0]) + R*math.cos(X[2][0] + self.DT*omg)],
+                        [0, 1, -R*math.sin(X[2][0]) + R*math.sin(X[2][0] + self.DT*omg)],
                         [0, 0, 1]])
         
         return J_m
@@ -57,8 +57,8 @@ class SimpleCarModel:
         
         v = u[0][0]
         omg = u[1][0]
-        V = np.array([[(-math.sin(X[2]) + math.sin(X[2] + omg*self.DT))/omg,v*(math.sin(X[2]) - math.sin(X[2] + omg*self.DT))/omg**2 + v*math.cos(X[2] + omg*self.DT)*self.DT/omg],
-                      [(math.cos(X[2]) - math.cos(X[2] + omg*self.DT))/omg,v*(-math.cos(X[2]) + math.cos(X[2] + omg*self.DT))/omg**2 + v*math.sin(X[2] + omg*self.DT)*self.DT/omg],
+        V = np.array([[(-math.sin(X[2][0]) + math.sin(X[2][0] + omg*self.DT))/omg,v*(math.sin(X[2][0]) - math.sin(X[2][0] + omg*self.DT))/omg**2 + v*math.cos(X[2][0] + omg*self.DT)*self.DT/omg],
+                      [(math.cos(X[2][0]) - math.cos(X[2][0] + omg*self.DT))/omg,v*(-math.cos(X[2][0]) + math.cos(X[2][0] + omg*self.DT))/omg**2 + v*math.sin(X[2][0] + omg*self.DT)*self.DT/omg],
                       [0,self.DT]])
         
         return V
