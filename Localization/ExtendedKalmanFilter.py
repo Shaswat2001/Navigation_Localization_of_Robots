@@ -5,6 +5,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 import numpy as np
 from MotionModel.SimpleCar import SimpleCarModel
 from ObservationModel.GPS import GPS
+from ObservationModel.RangeBearing import RangeBearing
 from utils.utils import *
 
 class EKF:
@@ -62,10 +63,9 @@ class EKF:
         X = self.X
         X_true = self.Xt
         P = self.P
-        R = self.g.R
 
-        X_true,_ = self.g.solve(X_true)
-        X_prior,G = self.g.solve(X)
+        X_true,_,_ = self.g.solve(X_true,"true")
+        X_prior,G,R = self.g.solve(X,"true")
         P_prior = G @ P @ G.T + R
 
         return X_true,X_prior,P_prior
@@ -77,8 +77,8 @@ class EKF:
 
         K = self.calculate_kalman_gain(Pp,H,Q)
 
-        residual = Z - h_x
-        X_post = Xp + K @ residual
+        res = residual(Z,h_x)
+        X_post = Xp + K @ res
         F = np.eye(len(X_post)) - K @ H
         P_post = F @ Pp
 
@@ -99,6 +99,10 @@ if __name__ == "__main__":
 
     motion_model = SimpleCarModel()
     obs_model = GPS()
+    
+    obs_model = RangeBearing()
+
+    landmarks = np.array([[5, 10], [10, 5], [15, 15]])
     filter = EKF(motion_model,obs_model)
     filter.run()
 

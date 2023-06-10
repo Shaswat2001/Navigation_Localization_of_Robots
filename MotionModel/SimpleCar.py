@@ -4,40 +4,65 @@ import math
 class SimpleCarModel:
 
     def __init__(self):
-
+        
         self.dim_state = 3 # [x, y, theta]
         self.dim_control = 2 # [v, omega]
         self.DT = 0.1
 
-        self.R = np.diag([0.1, 0.1, np.deg2rad(1.0)])**2 # state variance in [x, y, theta]
+        self.noise = np.diag([1.0, np.deg2rad(3.0)])**2 # control error given to velocity commands
+        self.M = np.diag([0.1, np.deg2rad(1.0)])**2 # state variance in [x, y, theta]
         self.u = np.array([[1,0.1]]).T # control input [v, omega]
 
         self.A = np.eye(self.dim_state)
 
-    def solve(self,X):
+    def solve(self,X,method="prob"):
 
         assert type(X) == np.ndarray, "State vector is not a matrix"
         assert len(X.shape) == 2, "State vector is not a 2D matrix"
         assert X.shape[0] == self.dim_state, "State vector is not of same size as that of dimensions of SIMPLE CAR MODEL"
 
-        B = np.array([[self.DT*math.cos(X[2][0]), 0],
-                      [self.DT*math.sin(X[2][0]), 0],
+        omg = self.u[1][0]
+
+        B = np.array([[-math.sin(X[2])/omg + math.sin(X[2] + self.DT*omg)/omg, 0],
+                      [ math.cos(X[2])/omg - math.cos(X[2] + self.DT*omg)/omg, 0],
                       [0, self.DT]])
         
-        X_new = self.A @ X + B @ self.u
+        if method == "prob":
+            u = self.u + self.noise @ np.random.randn(2,1)
+        else:
+            u = self.u
 
-        J_m = self.get_jacobian(X)
+        X_new = self.A @ X + B @ u
 
-        return X_new,J_m
+        J_m = self.get_jacobian(X,u)
+
+        V = self.get_model_covariance(X,u)
+
+        Rt = V @ self.M @ V.T
+
+        return X_new,J_m,Rt
     
-    def get_jacobian(self,X):
+    def get_jacobian(self,X,u):
 
-        J_m = np.array([[1, 0, -self.DT*self.u[0][0]*math.sin(X[2])],
-                        [0, 1,  self.DT*self.u[0][0]*math.cos(X[2])],
+        v = u[0][0]
+        omg = u[1][0]
+        R = v/omg
+        J_m = np.array([[1, 0, -R*math.cos(X[2]) + R*math.cos(X[2] + self.DT*omg)],
+                        [0, 1, -R*math.sin(X[2]) + R*math.sin(X[2] + self.DT*omg)],
                         [0, 0, 1]])
         
         return J_m
     
+    def get_model_covariance(self,X,u):
+        
+        v = u[0][0]
+        omg = u[1][0]
+        V = np.array([[(-math.sin(X[2]) + math.sin(X[2] + omg*self.DT))/omg,v*(math.sin(X[2]) - math.sin(X[2] + omg*self.DT))/omg**2 + v*math.cos(X[2] + omg*self.DT)*self.DT/omg],
+                      [(math.cos(X[2]) - math.cos(X[2] + omg*self.DT))/omg,v*(-math.cos(X[2]) + math.cos(X[2] + omg*self.DT))/omg**2 + v*math.sin(X[2] + omg*self.DT)*self.DT/omg],
+                      [0,self.DT]])
+        
+        return V
+
     def set_controls(self,U):
 
         assert type(U) == np.ndarray, "Control vector is not a matrix"

@@ -12,6 +12,15 @@ def theta2RMatrix(angle):
     
     return Rmat[0:2, 0:2]
 
+def residual(a, b):
+    """ compute residual (a-b) between measurements containing 
+    [range, bearing]. Bearing is normalized to [-pi, pi)"""
+    y = a - b
+    y[1] = y[1] % (2 * np.pi)    # force in range [0, 2 pi)
+    if y[1] > np.pi:             # move to [-pi, pi)
+        y[1] -= 2 * np.pi
+    return y
+
 def plot_paths(results,xEst,PEst):
 
     plt.cla()
